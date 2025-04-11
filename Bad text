@@ -1,0 +1,59 @@
+import csv
+import re
+from textblob.classifiers import *
+from collections import Counter
+
+
+def rating(number):
+    if number == "0":
+        return "offensive"
+    elif number == "1":
+        return "hate"
+    elif number == "2":
+        return "neither"
+    else:
+        return None  
+
+# Function to clean text
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)  
+    return text[:200]  
+
+training_data = []
+
+# Read CSV file with debugging prints
+print("Reading dataset")
+with open('train_dataset.csv', newline='', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader, None) 
+    for i, row in enumerate(reader):
+        if len(row) >= 2:
+            number = row[0].strip()
+            text = row[1].strip()
+            label = rating(number)
+            if label:  
+                training_data.append((clean_text(text), label))
+        if i < 5:  
+            print(f"Sample row {i}: {row}")
+
+
+# Define train-test split
+train_size = int(0.2 * len(training_data))
+train_set = training_data[:train_size]  
+test_set = training_data[train_size:]   
+
+# Train classifier
+#print("Training for NaiveBayesClassifier")
+#classifier = NaiveBayesClassifier(train_set)
+#accuracy = classifier.accuracy(test_set)
+#print(f"Model Accuracy on Test Data for NaiveBayes: {accuracy:.2f}")
+
+print("Training for DecisionTreeClassifier")
+classifier = DecisionTreeClassifier(train_set)
+accuracy = classifier.accuracy(test_set)
+print(f"Model Accuracy on Test Data DecisionTree: {accuracy:.2f}")
+
+# Manual input testing
+sample_text = input("Enter text to classify: ")
+print(f"Prediction: {classifier.classify(clean_text(sample_text))}")
